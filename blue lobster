@@ -1,0 +1,149 @@
+import java.io.*;
+import java.util.Scanner;
+
+public class Main {
+    public static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        boolean isRunning = true;
+
+        System.out.print("Вкажіть шлях до файлу (наприклад: файл.txt): ");
+        String filePath = scanner.nextLine();
+
+        while (isRunning) {
+            System.out.println("\n======= МЕНЮ =======");
+            System.out.println("1. Редагувати файл");
+            System.out.println("2. Переглянути файл");
+            System.out.println("3. Вихід");
+            System.out.print("Оберіть опцію: ");
+
+            int command;
+            if (scanner.hasNextInt()) {
+                command = scanner.nextInt();
+                scanner.nextLine();
+            } else {
+                System.out.println("Некоректне введення. Спробуйте ще раз.");
+                scanner.nextLine();
+                continue;
+            }
+
+            switch (command) {
+                case 1:
+                    modifyFile(filePath);
+                    break;
+                case 2:
+                    displayFile(filePath);
+                    break;
+                case 3:
+                    System.out.println("Програма завершена.");
+                    isRunning = false;
+                    break;
+                default:
+                    System.out.println("Невідома команда. Повторіть спробу.");
+            }
+        }
+
+        scanner.close();
+    }
+
+    public static void modifyFile(String filePath) {
+        System.out.println("\n1. Перезаписати");
+        System.out.println("2. Додати");
+        System.out.println("3. Назад");
+        System.out.print("Оберіть опцію: ");
+
+        int action;
+        if (scanner.hasNextInt()) {
+            action = scanner.nextInt();
+            scanner.nextLine();
+        } else {
+            System.out.println("Некоректне введення.");
+            scanner.nextLine();
+            return;
+        }
+
+        if (action == 3) return;
+
+        boolean append = (action == 2);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, append))) {
+            System.out.println("Введіть текст (порожній рядок — завершення):");
+
+            int lineNum = 1;
+            while (true) {
+                System.out.print(lineNum++ + " ");
+                String input = scanner.nextLine();
+                if (input.isEmpty()) break;
+                writer.write(input);
+                writer.newLine();
+            }
+
+            System.out.println("Файл оновлено.");
+        } catch (IOException e) {
+            System.out.println("Помилка при записі: " + e.getMessage());
+        }
+    }
+
+    public static void displayFile(String filePath) {
+        System.out.println("1. Повністю");
+        System.out.println("2. Частково");
+        System.out.print("Оберіть опцію: ");
+
+        int readOption;
+        if (scanner.hasNextInt()) {
+            readOption = scanner.nextInt();
+            scanner.nextLine();
+        } else {
+            System.out.println("Некоректне введення.");
+            scanner.nextLine();
+            return;
+        }
+
+        switch (readOption) {
+            case 1:
+                try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+                    System.out.println("\n=== Вміст файлу ===");
+                    String line;
+                    int num = 1;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(num++ + " " + line);
+                    }
+                } catch (IOException e) {
+                    System.out.println("Помилка: " + e.getMessage());
+                }
+                break;
+
+            case 2:
+                System.out.print("Введіть початковий рядок: ");
+                int from = scanner.nextInt();
+                scanner.nextLine();
+
+                System.out.print("Введіть кінцевий рядок: ");
+                int to = scanner.nextInt();
+                scanner.nextLine();
+
+                if (from <= 0 || to < from) {
+                    System.out.println("Невірний діапазон.");
+                    return;
+                }
+
+                try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+                    System.out.println("\n=== Вибраний фрагмент ===");
+                    String line;
+                    int num = 1;
+                    while ((line = reader.readLine()) != null) {
+                        if (num >= from && num <= to) {
+                            System.out.println(num + " " + line);
+                        }
+                        if (++num > to) break;
+                    }
+                } catch (IOException e) {
+                    System.out.println("Помилка: " + e.getMessage());
+                }
+                break;
+
+            default:
+                System.out.println("Невірна опція.");
+        }
+    }
+}
